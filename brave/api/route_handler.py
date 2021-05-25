@@ -54,6 +54,7 @@ async def delete_input(request, id):
     # input = _get_input(request, id)
     # run_on_master_thread_when_idle(input.delete)
     
+
     Logic.delete_output(_get_output(request, id))
     
     return _status_ok_response()
@@ -116,7 +117,7 @@ async def update_mixer(request, id):
 
 
 async def create_input(request):
-    # TODO  adicionar aqui output com id correspondente ao input, mas com uri de rtmp://rmtp.eaglestream.tv/live/ID00001 00002 00003 etc...     
+    # Adiciona aqui output com id correspondente ao input, mas com uri de rtmp://rmtp.eaglestream.tv/live/ID00001 00002 00003 etc...     
     
     new_request, input = Logic.create_input(request)
 
@@ -133,11 +134,7 @@ async def create_input(request):
 
 
 async def create_output(request):
-    logger.info("route_handler.py")
-    logger.info(request.json)
     output = request['session'].outputs.add(**request.json)
-    logger.info("route_handler.py")
-    logger.info(request['session'].outputs)
     logger.info('Created output #%d with details %s name: %s' % (output.id, request.json, output.uid))
     return sanic.response.json({'id': output.id, 'uid': output.uid})
 

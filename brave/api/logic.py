@@ -6,7 +6,6 @@ class Logic():
     def create_input(request):
         input = request['session'].inputs.add(**request.json)
         input.setup()
-        # logger.info('Created input #%d with details %s' % (input.id, request.json))
         return request, input
 
     @staticmethod
@@ -15,10 +14,13 @@ class Logic():
         params = {'type': 'rtmp', 'uri': output_uri, 'source': 'input' + str(input.id)} 
         request['session'].outputs.add(**params)
         return request
-
+    
+    
+    @staticmethod
     def delete_input(input_content):
         run_on_master_thread_when_idle(input_content.delete)
-    
+
+    @staticmethod
     def delete_output(output_content):
         run_on_master_thread_when_idle(output_content.delete)
         
