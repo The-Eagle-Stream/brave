@@ -5,8 +5,9 @@ import sanic.response
 from brave.helpers import run_on_master_thread_when_idle
 from brave.outputs.image import ImageOutput
 from sanic.exceptions import InvalidUsage
-import brave.config_file
+import brave.config_file 
 
+from brave.api.logic import Logic 
 
 async def all(request):
     return sanic.response.json({
@@ -48,8 +49,14 @@ async def get_health(request):
 
 
 async def delete_input(request, id):
-    input = _get_input(request, id)
-    run_on_master_thread_when_idle(input.delete)
+    Logic.delete_input(_get_input(request, id))
+
+    # input = _get_input(request, id)
+    # run_on_master_thread_when_idle(input.delete)
+    
+
+    Logic.delete_output(_get_output(request, id))
+    
     return _status_ok_response()
 
 
@@ -74,7 +81,7 @@ async def delete_mixer(request, id):
 async def cut_to_source(request, id):
     connection, details = _get_connection(request, id, create_if_not_made=True)
     run_on_master_thread_when_idle(connection.cut, details=details)
-    return _status_ok_response()
+    return _status_ok_response(id=id)
 
 
 async def overlay_source(request, id):
@@ -110,17 +117,25 @@ async def update_mixer(request, id):
 
 
 async def create_input(request):
-    # TODO  adicionar aqui output com id correspondente ao input, mas com uri de rtmp://rmtp.eaglestream.tv/live/ID00001 00002 00003 etc... 
+    # Adiciona aqui output com id correspondente ao input, mas com uri de rtmp://rmtp.eaglestream.tv/live/ID00001 00002 00003 etc...     
+    
+    new_request, input = Logic.create_input(request)
 
-    input = request['session'].inputs.add(**request.json)
-    input.setup()
-    logger.info('Created input #%d with details %s' % (input.id, request.json))
+    Logic.create_output(new_request, input)
+    # input = request['session'].inputs.add(**request.json)
+    # input.setup()
+    # logger.info('Created input #%d with details %s' % (input.id, request.json))
+
+    # output_uri = '/'.join(request.json['uri'].split("/")[:-2]) + "/live/" + request.json['uri'].split("/")[-1] + "0000" + str(input.id)
+    # params = {'type': 'rtmp', 'uri': output_uri, 'source': 'input' + str(input.id)} 
+    # request['session'].outputs.add(**params)
+   
     return sanic.response.json({'id': input.id, 'uid': input.uid})
 
 
 async def create_output(request):
     output = request['session'].outputs.add(**request.json)
-    logger.info('Created output #%d with details %s' % (output.id, request.json))
+    logger.info('Created output #%d with details %s name: %s' % (output.id, request.json, output.uid))
     return sanic.response.json({'id': output.id, 'uid': output.uid})
 
 
@@ -207,5 +222,9 @@ def _get_connection(request, id, create_if_not_made):
     return connection, request.json
 
 
-def _status_ok_response():
-    return sanic.response.json({'status': 'OK'})
+def _status_ok_response(id=None):
+    json = {'status': 'OK'}
+    if id:
+        json["id"] = id
+        
+    return sanic.response.json(json)
