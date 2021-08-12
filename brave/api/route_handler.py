@@ -124,7 +124,7 @@ async def create_input(request):
     Logic.create_output(new_request, input)
     # input = request['session'].inputs.add(**request.json)
     # input.setup()
-    # logger.info('Created input #%d with details %s' % (input.id, request.json))
+    logger.info('Created input #%d with details %s' % (input.id, request.json))
 
     # output_uri = '/'.join(request.json['uri'].split("/")[:-2]) + "/live/" + request.json['uri'].split("/")[-1] + "0000" + str(input.id)
     # params = {'type': 'rtmp', 'uri': output_uri, 'source': 'input' + str(input.id)} 
